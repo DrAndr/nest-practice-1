@@ -1,0 +1,22 @@
+
+services:
+  db:
+    image: postgres:16
+    container_name: nest-pg-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: nest-db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+
+volumes:
+  pgdata:
+
+networks:
+  backend:
