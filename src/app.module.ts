@@ -6,6 +6,10 @@ import {Dialect} from "sequelize/lib/sequelize";
 import * as process from "node:process";
 import {User} from "./users/users.model";
 import {UsersModule} from "./users/users.module";
+import { RolesModule } from './roles/roles.module';
+import {Role} from "./roles/roles.model";
+import {UserRoles} from "./utils/relations/user_roles.model";
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   controllers: [],
@@ -22,10 +26,11 @@ import {UsersModule} from "./users/users.module";
       // entities: [],
       synchronize: true,
       autoLoadModels: true,
-      models: [User],
+      models: [User, Role, UserRoles],
     }),
-    UsersModule
-
+    UsersModule,
+    RolesModule,
+    AuthModule
   ],
 
 })
