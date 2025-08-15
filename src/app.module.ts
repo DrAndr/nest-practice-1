@@ -1,15 +1,22 @@
 import { Module } from '@nestjs/common';
-
+import {MulterModule} from "@nestjs/platform-express";
 import {SequelizeModule} from "@nestjs/sequelize";
 import {ConfigModule} from "@nestjs/config";
+import {ServeStaticModule} from "@nestjs/serve-static";
+import * as path from 'path';
+
 import {Dialect} from "sequelize/lib/sequelize";
 import * as process from "node:process";
-import {User} from "./users/users.model";
+import {User} from "./models/users.model";
 import {UsersModule} from "./users/users.module";
 import { RolesModule } from './roles/roles.module';
-import {Role} from "./roles/roles.model";
-import {UserRoles} from "./utils/relations/user_roles.model";
+import {Role} from "./models/roles.model";
+import {UserRoles} from "./models/user_roles.model";
 import { AuthModule } from './auth/auth.module';
+import { PostsModule } from './posts/posts.module';
+import {Post} from "./models/posts.model";
+import {File} from "./models/files.model";
+import { FilesModule } from './files/files.module';
 
 @Module({
   controllers: [],
@@ -24,13 +31,20 @@ import { AuthModule } from './auth/auth.module';
       password: process.env.DB_PWD,
       database: process.env.DB_NAME,
       // entities: [],
-      synchronize: true,
-      autoLoadModels: true,
-      models: [User, Role, UserRoles],
+      synchronize: false,
+      autoLoadModels: false,
+      models: [User, Role, UserRoles, Post, File],
+
+
+    }),
+    MulterModule.register({
+      dest: './uploads'
     }),
     UsersModule,
     RolesModule,
-    AuthModule
+    AuthModule,
+    PostsModule,
+    FilesModule,
   ],
 
 })

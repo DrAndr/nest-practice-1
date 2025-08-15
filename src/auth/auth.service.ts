@@ -5,10 +5,10 @@ import bcrypt from 'bcryptjs';
 import {LoginDto} from "./dto/login.dto";
 import {RegisterDto} from "./dto/register.dto";
 import {UsersService} from "../users/users.service";
-import {User} from "../users/users.model";
+import {User} from "../models/users.model";
 
 import IAuthResponse from "./interfaces/IAuthResponse";
-import {JWT_SALT} from "./constants";
+import {PWD_SALT} from "../constants";
 import {map} from "lodash";
 
 
@@ -23,7 +23,6 @@ export class AuthService {
 
 	async login(body: LoginDto): Promise<IAuthResponse> {
 		const user = await this.validateUser(body);
-		console.log('user', user)
 		if (!user) throw new UnauthorizedException({message: 'Wrong login or password.'});
 		return await this.generateToken(user);
 	}
@@ -36,7 +35,7 @@ export class AuthService {
 			throw new HttpException(`The '${email}' email already used.`, HttpStatus.BAD_REQUEST);
 		}
 
-		const hashedPassword = await bcrypt.hash(password, JWT_SALT);
+		const hashedPassword = await bcrypt.hash(password, PWD_SALT);
 		const user = await this.usersService.createUser({
 			...body,
 			password: hashedPassword

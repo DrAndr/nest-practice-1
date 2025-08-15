@@ -1,8 +1,8 @@
 import {NestFactory} from '@nestjs/core';
-// import * as process from "node:process";
 import {AppModule} from "./app.module";
-import {DocumentBuilder, SwaggerModule} from "@nestjs/swagger";
 import initSwagger from "./utils/initSwagger";
+import {TransformInterceptor} from "./utils/interceptors/TransformInterceptor";
+import {GlobalExceptionsFilter} from "./utils/filters/GlobalExceptionsFilter";
 
 async function bootstrap(): Promise<void> {
 
@@ -11,6 +11,9 @@ async function bootstrap(): Promise<void> {
 
 	new initSwagger(app);
 
+	app.useGlobalInterceptors(new TransformInterceptor())
+
+	app.useGlobalFilters(new GlobalExceptionsFilter())
 
 	await app.listen(PORT, () => {
 		console.log(`App listening on port ${PORT}`)

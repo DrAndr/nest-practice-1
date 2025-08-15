@@ -1,13 +1,14 @@
 import {Body, Controller, Get, NotFoundException, Param, Post, UseGuards, UsePipes} from '@nestjs/common';
 import {UsersService} from "./users.service";
 import {CreateUserDto} from "./dto/create-user.dto";
-import {User} from "./users.model";
+import {User} from "../models/users.model";
 import {ApiOperation, ApiResponse, ApiTags} from "@nestjs/swagger";
 import {Roles} from "../auth/utils/roles-auth.decorator";
 import {RolesGuard} from "../auth/utils/roles.guard";
 import {AddRoleDto} from "./dto/add-role.dto";
 import {BanUserDto} from "./dto/ban-user.dto";
 import {ValidationPipe} from "../utils/pipes/validation.pipe";
+import {JwtAuthGuard} from "../auth/utils/jwt-auth.guard";
 
 @ApiTags('Users')
 @Controller('users')
@@ -26,7 +27,8 @@ export class UsersController {
 	@ApiOperation({summary: 'Get users'})
 	@ApiResponse({status: 200, description: 'Return users list', type: [User]})
 	@Roles('ADMIN')
-	@UseGuards(RolesGuard) // @UseGuards(JwtAuthGuard)
+	@UseGuards(RolesGuard)
+	// @UseGuards(JwtAuthGuard)
 	@Get()
 	getAll(): Promise<User[]> {
 		return this.usersService.getUsers();

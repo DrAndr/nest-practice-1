@@ -1,11 +1,11 @@
 import {Body, HttpStatus, Injectable, NotFoundException} from '@nestjs/common';
-import {User} from "./users.model";
+import {User} from "../models/users.model";
 import {InjectModel} from "@nestjs/sequelize";
 import {CreateUserDto} from "./dto/create-user.dto";
 import {RolesService} from "../roles/roles.service";
 import isArray from "lodash/isArray";
 import {ExceptionsHandler} from "@nestjs/core/exceptions/exceptions-handler";
-import {Role} from "../roles/roles.model";
+import {Role} from "../models/roles.model";
 import {AddRoleDto} from "./dto/add-role.dto";
 import {BanUserDto} from "./dto/ban-user.dto";
 
@@ -45,11 +45,11 @@ export class UsersService {
 	}
 
 	async getUsers(): Promise<User[]> {
-		return await this.userModel.findAll({include: [Role]}); // or {include: {all: true}};
+		return await this.userModel.findAll({include: [Role], attributes: { exclude: ['password'] }}); // or {include: {all: true}};
 	}
 
 	async getUserById(id: number): Promise<User | null> {
-		return await this.userModel.findOne({where: {id}, include: [Role]});
+		return await this.userModel.findOne({where: {id}, include: [Role], attributes: { exclude: ['password'] }});
 	}
 
 	async getUserByEmail(email: string): Promise<User | null> {
@@ -77,12 +77,10 @@ export class UsersService {
 		/**
 		 * Old approach, still work but not too obviously
 		 */
-			// const user = await this.userModel.findByPk(dto.id);
-		//
+		// const user = await this.userModel.findByPk(dto.id);
 		// if (!user) {
 		// 	throw new NotFoundException('User not found.');
 		// }
-		//
 		// user.dataValues.banned = true;
 		// user.dataValues.banReason = dto?.banReason || '';
 		//

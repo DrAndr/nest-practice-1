@@ -1,7 +1,9 @@
-import {Model, Table, Column, DataType, BelongsToMany} from 'sequelize-typescript';
+import {Model, Table, Column, DataType, BelongsToMany, HasMany} from 'sequelize-typescript';
 import {ApiProperty} from "@nestjs/swagger";
-import {Role} from "../roles/roles.model";
-import {UserRoles} from "../utils/relations/user_roles.model";
+import {Role} from "./roles.model";
+import {UserRoles} from "./user_roles.model";
+import {Post} from "./posts.model";
+import {File} from "./files.model";
 
 interface UserCreationAttributes {
 	name?: string;
@@ -39,4 +41,10 @@ export class User extends Model<User, UserCreationAttributes> {
 	@ApiProperty({example: '[{value: "admin", description:""}]', description: 'User roles'})
 	@BelongsToMany(() => Role, () => UserRoles)
 	roles: [Role];
+
+	@HasMany(()=>Post)
+	posts: Post[];
+
+	@HasMany(()=>File)
+	files: File[];
 }

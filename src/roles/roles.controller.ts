@@ -1,7 +1,7 @@
 import {Body, Controller, Delete, Get, Param, Post, Query} from '@nestjs/common';
 import {ApiTags} from "@nestjs/swagger";
 import {CreateRoleDto} from "./dto/create-role.dto";
-import {Role} from "./roles.model";
+import {Role} from "../models/roles.model";
 import {RolesService} from "./roles.service";
 import {PaginationDto} from "../utils/dto/pagination.dto";
 
