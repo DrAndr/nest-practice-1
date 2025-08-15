@@ -1,4 +1,4 @@
-export class BanUserDto{
-	id: number;
-	banReason?: string;
+export class BanUserDto {
+  id: number;
+  banReason?: string;
 }

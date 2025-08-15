@@ -1,7 +1,7 @@
-import {HttpStatus} from "@nestjs/common";
+import { HttpStatus } from '@nestjs/common';
 
-export  interface IOnDelete{
-	statusCode: HttpStatus,
-	success: boolean,
-	message: string,
+export interface IOnDelete {
+  statusCode: HttpStatus;
+  success: boolean;
+  message: string;
 }

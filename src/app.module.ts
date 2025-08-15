@@ -1,30 +1,30 @@
 import { Module } from '@nestjs/common';
-import {MulterModule} from "@nestjs/platform-express";
-import {SequelizeModule} from "@nestjs/sequelize";
-import {ConfigModule} from "@nestjs/config";
-import {ServeStaticModule} from "@nestjs/serve-static";
+import { MulterModule } from '@nestjs/platform-express';
+import { SequelizeModule } from '@nestjs/sequelize';
+import { ConfigModule } from '@nestjs/config';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import * as path from 'path';
 
-import {Dialect} from "sequelize/lib/sequelize";
-import * as process from "node:process";
-import {User} from "./models/users.model";
-import {UsersModule} from "./users/users.module";
+import { Dialect } from 'sequelize/lib/sequelize';
+import * as process from 'node:process';
+import { User } from './models/users.model';
+import { UsersModule } from './users/users.module';
 import { RolesModule } from './roles/roles.module';
-import {Role} from "./models/roles.model";
-import {UserRoles} from "./models/user_roles.model";
+import { Role } from './models/roles.model';
+import { UserRoles } from './models/user_roles.model';
 import { AuthModule } from './auth/auth.module';
 import { PostsModule } from './posts/posts.module';
-import {Post} from "./models/posts.model";
-import {File} from "./models/files.model";
+import { Post } from './models/posts.model';
+import { File } from './models/files.model';
 import { FilesModule } from './files/files.module';
 
 @Module({
   controllers: [],
   providers: [],
   imports: [
-    ConfigModule.forRoot({envFilePath: `.${process.env.NODE_ENV}.env`}),
+    ConfigModule.forRoot({ envFilePath: `.${process.env.NODE_ENV}.env` }),
     SequelizeModule.forRoot({
-      dialect : process.env.DB_DIALECT as Dialect,
+      dialect: process.env.DB_DIALECT as Dialect,
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
       username: process.env.DB_USER,
@@ -34,18 +34,13 @@ import { FilesModule } from './files/files.module';
       synchronize: false,
       autoLoadModels: false,
       models: [User, Role, UserRoles, Post, File],
-
-
     }),
-    MulterModule.register({
-      dest: './uploads'
-    }),
+    MulterModule.register({ dest: './uploads' }),
     UsersModule,
     RolesModule,
     AuthModule,
     PostsModule,
     FilesModule,
   ],
-
 })
 export class AppModule {}

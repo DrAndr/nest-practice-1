@@ -1,103 +1,115 @@
-import {Body, HttpStatus, Injectable, NotFoundException} from '@nestjs/common';
-import {User} from "../models/users.model";
-import {InjectModel} from "@nestjs/sequelize";
-import {CreateUserDto} from "./dto/create-user.dto";
-import {RolesService} from "../roles/roles.service";
-import isArray from "lodash/isArray";
-import {ExceptionsHandler} from "@nestjs/core/exceptions/exceptions-handler";
-import {Role} from "../models/roles.model";
-import {AddRoleDto} from "./dto/add-role.dto";
-import {BanUserDto} from "./dto/ban-user.dto";
+import {
+  Body,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { User } from '../models/users.model';
+import { InjectModel } from '@nestjs/sequelize';
+import { CreateUserDto } from './dto/create-user.dto';
+import { RolesService } from '../roles/roles.service';
+import isArray from 'lodash/isArray';
+import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
+import { Role } from '../models/roles.model';
+import { AddRoleDto } from './dto/add-role.dto';
+import { BanUserDto } from './dto/ban-user.dto';
 
 @Injectable()
 export class UsersService {
+  constructor(
+    @InjectModel(User)
+    private readonly userModel: typeof User,
+    private readonly rolesService: RolesService,
+  ) {}
 
-	constructor(@InjectModel(User)
-	            private readonly userModel: typeof User,
-	            private readonly rolesService: RolesService
-	) {
-	}
+  async createUser(dto: CreateUserDto): Promise<User | null> {
+    const user = await this.userModel.create(dto);
 
-	async createUser(dto: CreateUserDto): Promise<User | null> {
-		const user = await this.userModel.create(dto);
+    // check is user roles provided
+    if (!dto?.roles || !isArray(dto.roles)) {
+      // get role by value
+      let role = await this.rolesService.getRoleByValue('USER');
 
-		// check is user roles provided
-		if (!dto?.roles || !isArray(dto.roles)) {
+      // or create common USER role
+      if (!role) {
+        role = await this.rolesService.create({
+          value: 'USER',
+          description: 'Common user role',
+        });
+      }
 
-			// get role by value
-			let role = await this.rolesService.getRoleByValue('USER');
+      // throw exception if we have mo user role and cant create
+      if (!role.id) throw new ExceptionsHandler();
 
-			// or create common USER role
-			if (!role) {
-				role = await this.rolesService.create({value: 'USER', description: 'Common user role'})
-			}
+      // finally add the USER role to DB
+      await user.$set('roles', [role.id]);
+    } else {
+      await user.$set('roles', dto.roles);
+    }
 
-			// throw exception if we have mo user role and cant create
-			if (!role.id) throw new ExceptionsHandler()
+    return await this.getUserById(user.id);
+  }
 
-			// finally add the USER role to DB
-			await user.$set('roles', [role.id])
-		} else {
-			await user.$set('roles', dto.roles);
-		}
+  async getUsers(): Promise<User[]> {
+    return await this.userModel.findAll({
+      include: [Role],
+      attributes: { exclude: ['password'] },
+    }); // or {include: {all: true}};
+  }
 
-		return await this.getUserById(user.id);
-	}
+  async getUserById(id: number): Promise<User | null> {
+    return await this.userModel.findOne({
+      where: { id },
+      include: [Role],
+      attributes: { exclude: ['password'] },
+    });
+  }
 
-	async getUsers(): Promise<User[]> {
-		return await this.userModel.findAll({include: [Role], attributes: { exclude: ['password'] }}); // or {include: {all: true}};
-	}
+  async getUserByEmail(email: string): Promise<User | null> {
+    return await this.userModel.findOne({ where: { email }, include: [Role] });
+  }
 
-	async getUserById(id: number): Promise<User | null> {
-		return await this.userModel.findOne({where: {id}, include: [Role], attributes: { exclude: ['password'] }});
-	}
+  async addRole(dto: AddRoleDto): Promise<User | null> {
+    const user = await this.userModel.findByPk(dto.userId);
+    const role = await this.rolesService.getRoleByValue(dto.roleValue);
 
-	async getUserByEmail(email: string): Promise<User | null> {
-		return await this.userModel.findOne({where: {email}, include: [Role]});
-	}
+    if (!user) {
+      throw new NotFoundException('User does not found.');
+    }
+    if (!role) {
+      throw new NotFoundException('User does not found.');
+    }
 
-	async addRole(dto: AddRoleDto): Promise<User | null> {
-		const user = await this.userModel.findByPk(dto.userId);
-		const role = await this.rolesService.getRoleByValue(dto.roleValue);
+    await user.$add('roles', role.id);
+    await user.save();
+    return await this.getUserById(user.id);
+  }
 
-		if (!user) {
-			throw new NotFoundException('User does not found.');
-		}
-		if (!role) {
-			throw new NotFoundException('User does not found.');
-		}
+  async ban(dto: BanUserDto): Promise<User> {
+    /**
+     * Old approach, still work but not too obviously
+     */
+    // const user = await this.userModel.findByPk(dto.id);
+    // if (!user) {
+    // 	throw new NotFoundException('User not found.');
+    // }
+    // user.dataValues.banned = true;
+    // user.dataValues.banReason = dto?.banReason || '';
+    //
+    // return user.save();
 
-		await user.$add('roles', role.id);
-		await user.save();
-		return await this.getUserById(user.id);
-	}
+    /**
+     * Looks more clear, since record updated obviously
+     */
+    const [count, [updatedUser]] = await this.userModel.update(
+      { banned: true, banReason: dto?.banReason || '' },
+      { where: { id: dto.id }, returning: true },
+    );
 
-	async ban(dto: BanUserDto): Promise<User> {
+    if (!count) {
+      throw new NotFoundException('User not found.');
+    }
 
-		/**
-		 * Old approach, still work but not too obviously
-		 */
-		// const user = await this.userModel.findByPk(dto.id);
-		// if (!user) {
-		// 	throw new NotFoundException('User not found.');
-		// }
-		// user.dataValues.banned = true;
-		// user.dataValues.banReason = dto?.banReason || '';
-		//
-		// return user.save();
-
-		/**
-		 * Looks more clear, since record updated obviously
-		 */
-		const [count, [updatedUser]] = await this.userModel.update(
-			{ banned: true, banReason: dto?.banReason || '' },
-			{ where: { id: dto.id }, returning: true }
-		);
-
-		if (!count) {
-			throw new NotFoundException('User not found.');
-		}
-
-		return updatedUser;
-	}
+    return updatedUser;
+  }
 }
