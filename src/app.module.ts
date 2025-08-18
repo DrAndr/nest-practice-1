@@ -25,6 +25,7 @@ import { FilesModule } from './files/files.module';
     ConfigModule.forRoot({ envFilePath: `.${process.env.NODE_ENV}.env` }),
     SequelizeModule.forRoot({
       dialect: process.env.DB_DIALECT as Dialect,
+      storage: process.env.DB_STORAGE || undefined,
       host: process.env.DB_HOST,
       port: Number(process.env.DB_PORT),
       username: process.env.DB_USER,
