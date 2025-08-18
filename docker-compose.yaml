@@ -1,15 +1,38 @@
 
 services:
+
+  app:
+    container_name: nest-app
+    build:
+      context: .
+    env_file:
+      - .development.env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    ports:
+      - 3000:3000
+      - 9229:9229
+    command: npm run start:dev
+    depends_on:
+      - db
+    restart: always
+    networks:
+      - backend
+
   db:
     image: postgres:16
     container_name: nest-pg-db
+    env_file:
+      - .development.env
     restart: always
     ports:
-      - "5432:5432"
+      - 5432:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: root
       POSTGRES_DB: nest-db
+      PG_DATA: /var/lib/postgresql/data
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:

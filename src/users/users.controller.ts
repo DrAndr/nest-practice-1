@@ -24,19 +24,21 @@ import { JwtAuthGuard } from '../auth/utils/jwt-auth.guard';
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @ApiOperation({ summary: 'Create user' })
+  @ApiOperation({ summary: 'Create user.' })
   @ApiResponse({
     status: 201,
-    description: 'Successfully created user',
+    description: 'Successfully created user.',
     type: User,
   })
+  @Roles('ADMIN')
+  @UseGuards(RolesGuard)
   @UsePipes(ValidationPipe)
   @Post()
   create(@Body() userDto: CreateUserDto): Promise<User | null> {
     return this.usersService.createUser(userDto);
   }
 
-  @ApiOperation({ summary: 'Get users' })
+  @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Return users list', type: [User] })
   @Roles('ADMIN')
   @UseGuards(RolesGuard)
@@ -46,7 +48,7 @@ export class UsersController {
     return this.usersService.getUsers();
   }
 
-  @ApiOperation({ summary: 'Create user' })
+  @ApiOperation({ summary: 'Get user by ID' })
   @ApiResponse({ status: 200, description: 'Return user by id', type: User })
   @Get('/:id')
   getById(@Param('id') id: number): Promise<User | null> {

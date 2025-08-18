@@ -18,7 +18,7 @@ export class AuthController {
   }
 
   @ApiOperation({ summary: 'Register user' })
-  @ApiResponse({ status: 201, description: 'Register user' })
+  @ApiResponse({ status: 201, description: 'Register user'})
   @Post('/register')
   register(@Body() body: RegisterDto): Promise<IAuthResponse> {
     return this.authService.register(body);
