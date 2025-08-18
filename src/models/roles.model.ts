@@ -25,7 +25,7 @@ export class Role extends Model<Role, RoleCreationAttributes> {
   })
   declare id: number;
 
-  @ApiProperty({ example: 'admin', description: 'Role name value.' })
+  @ApiProperty({ example: 'ADMIN', description: 'Role name value.' }) // provide the example of request
   @Column({ type: DataType.STRING, allowNull: false, unique: true })
   value: string;
 
